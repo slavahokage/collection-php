@@ -6,11 +6,16 @@ class Enumerable
 {
     private $elements = [];
 
-    private $stack = [];
+    private $functionsCall = [];
 
     private function __construct($elements)
     {
         $this->elements = $elements;
+    }
+
+    public function setFunctionsCall(array $functionsCall)
+    {
+        $this->functionsCall = $functionsCall;
     }
 
     public static function wrap(array $elements): Enumerable
@@ -20,7 +25,7 @@ class Enumerable
 
     public function where($keySought, $valueSought)
     {
-        $this->stack[] = function () use ($valueSought, $keySought) {
+        $this->functionsCall[] = function () use ($valueSought, $keySought) {
             foreach ($this->elements as $key => $value) {
                 if (!array_key_exists($keySought, $value) || !in_array($valueSought, $value)) {
                     unset($this->elements[$key]);
@@ -33,8 +38,8 @@ class Enumerable
 
     public function all()
     {
-        foreach ($this->stack as $f) {
-            $f();
+        foreach ($this->functionsCall as $func) {
+            $func();
         }
 
         return $this->elements;
