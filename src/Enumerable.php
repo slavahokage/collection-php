@@ -8,38 +8,36 @@ class Enumerable
 
     private $functionsCall = [];
 
-    private function __construct($elements)
+    private function __construct($elements, $functionsCall)
     {
         $this->elements = $elements;
-    }
-
-    public function setFunctionsCall(array $functionsCall)
-    {
         $this->functionsCall = $functionsCall;
     }
 
     public static function wrap(array $elements): Enumerable
     {
-        return new Enumerable($elements);
+        return new Enumerable($elements, []);
     }
 
     public function where($keySought, $valueSought)
     {
-        $this->functionsCall[] = function () use ($valueSought, $keySought) {
-            foreach ($this->elements as $key => $value) {
+        $this->functionsCall[] = function ($elements) use ($valueSought, $keySought) {
+            foreach ($elements as $key => $value) {
                 if (!array_key_exists($keySought, $value) || !in_array($valueSought, $value)) {
-                    unset($this->elements[$key]);
+                    unset($elements[$key]);
                 }
             }
+
+            return $elements;
         };
 
-        return $this;
+        return new Enumerable($this->elements, $this->functionsCall);
     }
 
     public function all()
     {
         foreach ($this->functionsCall as $func) {
-            $func();
+            $this->elements = $func($this->elements);
         }
 
         return $this->elements;
