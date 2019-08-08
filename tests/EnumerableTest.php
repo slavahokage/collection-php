@@ -9,10 +9,10 @@ class EnumerableTest extends \PHPUnit\Framework\TestCase
     public function testWhereStatements()
     {
         $elements = [
-            ['key' => 'value', 'year' => 1932],
-            ['key' => '', 'year' => 1100],
-            ['key' => 'value', 'year' => 32],
-            ['key' => 'value', 'year' => 32, 'testKey' => 'testValue']
+            ['k' => 'value', 'year' => 1932],
+            ['k' => '', 'year' => 1100],
+            ['k' => 'value', 'year' => 32],
+            ['k' => 'value', 'year' => 32, 'testKey' => 'testValue']
         ];
 
         $enumerable = Enumerable::wrap($elements);
@@ -28,11 +28,11 @@ class EnumerableTest extends \PHPUnit\Framework\TestCase
             return $elements;
         };
 
-        $newEnumerable = $enumerable->where('key', 'value')
+        $newEnumerable = $enumerable->where('k', 'value')
             ->where('year', 32)
             ->where($f);
 
-        $this->assertEquals([['key' => 'value', 'year' => 32, 'testKey' => 'testValue']], $newEnumerable->all());
+        $this->assertEquals([['k' => 'value', 'year' => 32, 'testKey' => 'testValue']], $newEnumerable->all());
     }
 
     public function testEnumerableType()
