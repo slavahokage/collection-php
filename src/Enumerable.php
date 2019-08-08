@@ -6,39 +6,43 @@ class Enumerable
 {
     private $elements = [];
 
-    private $statements;
+    private $statements = [];
 
     private function __construct($elements, $statements)
     {
         $this->elements = $elements;
-        if ($statements === null) {
-            $this->statements = new \SplStack();
-        } else {
-            $this->statements = $statements;
-        }
+        $this->statements = $statements;
     }
 
-    public static function wrap(array $elements): Enumerable
+    public static function wrap(array $elements)
     {
-        return new Enumerable($elements, null);
+        return new Enumerable($elements, []);
     }
 
-    public function where($keySought, $valueSought)
+    public function where($keySought, $valueSought = null)
     {
-        $this->statements->push($this->whereStatement($valueSought, $keySought));
+        $newEnumerable = new Enumerable($this->elements, $this->statements);
 
-        return new Enumerable($this->elements, $this->statements);
+        $newEnumerable->statements[] = $this->whereStatement($valueSought, $keySought);
+
+        return $newEnumerable;
     }
 
     public function all()
     {
-        $this->callStatements();
+        $newEnumerable = new Enumerable($this->elements, $this->statements);
 
-        return $this->elements;
+        $newEnumerable->callStatements();
+
+        return $newEnumerable->elements;
     }
 
     private function whereStatement($valueSought, $keySought)
     {
+        if (is_callable($keySought)) {
+            return $keySought;
+        }
+
         return function ($elements) use ($valueSought, $keySought) {
             foreach ($elements as $key => $value) {
                 if (!array_key_exists($keySought, $value) || !in_array($valueSought, $value)) {
@@ -46,14 +50,14 @@ class Enumerable
                 }
             }
 
-            return $elements;
+            return array_values($elements);
         };
     }
 
     private function callStatements()
     {
-        while (!$this->statements->isEmpty()) {
-            $statement = $this->statements->pop();
+        while (!empty($this->statements)) {
+            $statement = array_pop($this->statements);
             $this->elements = $statement($this->elements);
         }
     }

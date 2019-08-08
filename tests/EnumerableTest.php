@@ -11,13 +11,28 @@ class EnumerableTest extends \PHPUnit\Framework\TestCase
         $elements = [
             ['key' => 'value', 'year' => 1932],
             ['key' => '', 'year' => 1100],
-            ['key' => 'value', 'year' => 32]
+            ['key' => 'value', 'year' => 32],
+            ['key' => 'value', 'year' => 32, 'testKey' => 'testValue']
         ];
 
         $enumerable = Enumerable::wrap($elements);
-        $newEnumerable = $enumerable->where('key', 'value')->where('year', 1932);
 
-        $this->assertEquals([['key' => 'value', 'year' => 1932]], $newEnumerable->all());
+        $f = function ($elements) {
+
+            foreach ($elements as $key => $value) {
+                if (!array_key_exists('testKey', $value) || !in_array('testValue', $value)) {
+                    unset($elements[$key]);
+                }
+            }
+
+            return $elements;
+        };
+
+        $newEnumerable = $enumerable->where('key', 'value')
+            ->where('year', 32)
+            ->where($f);
+
+        $this->assertEquals([['key' => 'value', 'year' => 32, 'testKey' => 'testValue']], $newEnumerable->all());
     }
 
     public function testEnumerableType()
