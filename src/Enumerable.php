@@ -44,21 +44,32 @@ class Enumerable
         }
 
         return function ($elements) use ($valueSought, $keySought) {
+            $newElements = [];
+
             foreach ($elements as $key => $value) {
-                if (!array_key_exists($keySought, $value) || !in_array($valueSought, $value)) {
-                    unset($elements[$key]);
+                if (array_key_exists($keySought, $value) || in_array($valueSought, $value)) {
+                    $newElements[] = $elements[$key];
                 }
             }
 
-            return array_values($elements);
+            return $newElements;
         };
     }
 
     private function callStatements()
     {
-        while (!empty($this->statements)) {
-            $statement = array_pop($this->statements);
-            $this->elements = $statement($this->elements);
+        $this->takeOutStatements($this->statements, $this->elements);
+    }
+
+    private function takeOutStatements(&$statements, &$elements)
+    {
+        if (empty($statements)) {
+            return;
         }
+
+        $statement = array_pop($statements);
+        $elements = $statement($elements);
+
+        $this->takeOutStatements($statements, $elements);
     }
 }
